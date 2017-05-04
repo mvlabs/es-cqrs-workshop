@@ -16,10 +16,22 @@ and install all the required dependencies with
 composer install
 ```
 
+If you are using docker, you could use
+
+```bash
+bin/composer install
+```
+
 ## Run the application
 
 Run the application using
 
 ```bash
 php -S localhost:8000 public/index.php
+```
+
+If you are using docker, you could use
+
+```bash
+bin/server
 ```

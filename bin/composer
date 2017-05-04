@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+docker run --rm -ti --volume "$(pwd):/app:rw" --user "$(id -u):$(id -g)" --dns 8.8.8.8 --env "COMPOSER_HOME=/tmp/composer" composer "$@"
