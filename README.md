@@ -1,2 +1,3 @@
-# es-cqrs-workshop
-Source php for es/cqrs workshop
+# Event sourcing/CQRS workshop
+
+Source code for es/cqrs workshop
