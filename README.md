@@ -15,3 +15,11 @@ and install all the required dependencies with
 ```bash
 composer install
 ```
+
+## Run the application
+
+Run the application using
+
+```bash
+php -S localhost:8000 public/index.php
+```
