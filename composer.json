@@ -13,7 +13,10 @@
         "zendframework/zend-expressive": "^2.0",
         "zendframework/zend-servicemanager": "^3.3",
         "zendframework/zend-expressive-fastroute": "^2.0",
-        "filp/whoops": "^2.1"
+        "filp/whoops": "^2.1",
+        "prooph/service-bus": "^6.0",
+        "prooph/event-store-bus-bridge": "^3.0",
+        "prooph/event-store": "^7.0"
     },
     "autoload": {
         "psr-4": {
