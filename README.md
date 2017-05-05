@@ -35,3 +35,5 @@ If you are using docker, you could use
 ```bash
 bin/server
 ```
+
+and then navigate to [localohost:8000](http://localhost:8000/)

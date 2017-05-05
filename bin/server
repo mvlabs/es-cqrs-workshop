@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-docker run --rm -ti -p 8000:8000 --volume "$(pwd):/app:rw" --user "$(id -u):$(id -g)" --dns 8.8.8.8 --workdir /app php:7.1 php -S 0.0.0.0:8000 public/index.php
+docker run --rm -ti -p 8000:8000 --volume "$(pwd):/app:rw" --user "$(id -u):$(id -g)" --dns 8.8.8.8 escqrs-workshop php -S 0.0.0.0:8000 public/index.php

@@ -8,6 +8,8 @@
     ],
     "require": {
         "php": "^7.1",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*",
         "zendframework/zend-expressive": "^2.0",
         "zendframework/zend-servicemanager": "^3.3",
         "zendframework/zend-expressive-fastroute": "^2.0",
