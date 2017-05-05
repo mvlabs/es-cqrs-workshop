@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop;
 
+use MVLabs\EsCqrsWorkshop\Action\Home;
 use Zend\Expressive\Application;
 use Zend\Expressive\Router\FastRouteRouter;
 use Zend\Stratigility\Middleware\ErrorHandler;
@@ -27,6 +28,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
     $app->pipeRoutingMiddleware();
     $app->pipeDispatchMiddleware();
+
+    $app->get('/', Home::class);
 
     $app->run();
 })();
