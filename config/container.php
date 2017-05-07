@@ -38,7 +38,9 @@ return new ServiceManager([
             );
         },
         OrderNewPizza::class => function (ContainerInterface $container): OrderNewPizza {
-            return new OrderNewPizza();
+            return new OrderNewPizza(
+                $container->get(CommandBus::class)
+            );
         },
 
         // INFRASTRUCTURE
