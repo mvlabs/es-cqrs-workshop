@@ -9,14 +9,15 @@
     "require": {
         "php": "^7.1",
         "ext-pdo": "*",
-        "ext-pdo_sqlite": "*",
+        "ext-pdo_pgsql": "*",
         "zendframework/zend-expressive": "^2.0",
         "zendframework/zend-servicemanager": "^3.3",
         "zendframework/zend-expressive-fastroute": "^2.0",
         "filp/whoops": "^2.1",
         "prooph/service-bus": "^6.0",
         "prooph/event-store-bus-bridge": "^3.0",
-        "prooph/event-store": "^7.0"
+        "prooph/event-store": "^7.0",
+        "prooph/pdo-event-store": "^1.0"
     },
     "autoload": {
         "psr-4": {
