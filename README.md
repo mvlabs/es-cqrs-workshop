@@ -19,6 +19,7 @@ composer install
 If you are using docker, you could use
 
 ```bash
+docker build -t escqrs-workshop-composer ./docker/composer/   -- this is needed only the first time
 bin/composer install
 ```
 
@@ -33,7 +34,9 @@ php -S localhost:8000 public/index.php
 If you are using docker, you could use
 
 ```bash
-bin/server
+docker-compose up
 ```
 
-and then navigate to [localohost:8000](http://localhost:8000/)
+Adding `127.0.0.1 escqrs-workshop.local` to your hosts you will be able
+to navigate to [http://escqrs-workshop.local/](http://escqrs-workshop.local/)
+and see the wonderful application

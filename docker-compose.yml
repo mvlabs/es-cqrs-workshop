@@ -1,0 +1,43 @@
+version: '2'
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: escqrs-workshop-nginx
+    ports:
+      - 80:80
+    volumes:
+      - .:/app
+      - ./docker/nginx/escqrs-workshop.conf:/etc/nginx/conf.d/escqrs-workshop.conf
+    networks:
+      - base
+
+  php:
+    build: ./docker/php
+    container_name: escqrs-workshop-php
+    volumes:
+      - .:/app
+    networks:
+      - base
+
+  postgres:
+    image: postgres:alpine
+    container_name: escqrs-workshop-postgres
+    environment:
+      - POSTGRES_USER=mvlabs
+      - POSTGRES_PASSWORD=mvlabs
+      - POSTGRES_DB=mvlabs
+    ports:
+      - 5432:5432
+    networks:
+      - base
+
+  pgadmin:
+    image: fenglc/pgadmin4
+    container_name: escqrs-workshop-pgadmin4
+    ports:
+      - 5050:5050
+    networks:
+      - base
+
+networks:
+  base:
