@@ -5,16 +5,28 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
+use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
-use MVLabs\EsCqrsWorkshop\Action\OrderNewPizza;
-use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
+use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
+use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
 use Prooph\Common\Event\ActionEvent;
+use Prooph\Common\Event\ProophActionEventEmitter;
+use Prooph\Common\Messaging\FQCNMessageFactory;
 use Prooph\EventStore\EventStore;
+use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
+use Prooph\EventStore\Pdo\PostgresEventStore;
+use Prooph\EventStore\TransactionalActionEventEmitterEventStore;
+use Prooph\EventStoreBusBridge\EventPublisher;
 use Prooph\EventStoreBusBridge\TransactionManager;
 use Prooph\ServiceBus\CommandBus;
+use Prooph\ServiceBus\EventBus;
 use Prooph\ServiceBus\MessageBus;
 use Prooph\ServiceBus\Plugin\AbstractPlugin;
+use Prooph\ServiceBus\Plugin\InvokeStrategy\OnEventStrategy;
 use Prooph\ServiceBus\Plugin\ServiceLocatorPlugin;
 use Zend\Expressive\Container\ErrorHandlerFactory;
 use Zend\Expressive\Container\WhoopsErrorResponseGeneratorFactory;
@@ -37,8 +49,8 @@ return new ServiceManager([
                 $container->get(Renderer::class)
             );
         },
-        OrderNewPizza::class => function (ContainerInterface $container): OrderNewPizza {
-            return new OrderNewPizza(
+        CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
+            return new CreatePizzeria(
                 $container->get(CommandBus::class)
             );
         },
@@ -63,7 +75,8 @@ return new ServiceManager([
                                 MessageBus::EVENT_PARAM_MESSAGE_HANDLER,
                                 (string) $event->getParam(MessageBus::EVENT_PARAM_MESSAGE_NAME)
                             );
-                        }
+                        },
+                        150000
                     );
                 }
             })->attachToMessageBus($commandBus);
@@ -78,6 +91,61 @@ return new ServiceManager([
             ))->attachToMessageBus($commandBus);
 
             return $commandBus;
+        },
+        EventStore::class => function (ContainerInterface $container): EventStore {
+            $eventStore = new PostgresEventStore(
+                new FQCNMessageFactory(),
+                $container->get(\PDO::class),
+                new PostgresSingleStreamStrategy(),
+                1000
+            );
+
+            $wrapper = new TransactionalActionEventEmitterEventStore(
+                $eventStore,
+                new ProophActionEventEmitter([
+                    TransactionalActionEventEmitterEventStore::EVENT_APPEND_TO,
+                    TransactionalActionEventEmitterEventStore::EVENT_CREATE,
+                    TransactionalActionEventEmitterEventStore::EVENT_LOAD,
+                    TransactionalActionEventEmitterEventStore::EVENT_LOAD_REVERSE,
+                    TransactionalActionEventEmitterEventStore::EVENT_DELETE,
+                    TransactionalActionEventEmitterEventStore::EVENT_HAS_STREAM,
+                    TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_METADATA,
+                    TransactionalActionEventEmitterEventStore::EVENT_UPDATE_STREAM_METADATA,
+                    TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_NAMES,
+                    TransactionalActionEventEmitterEventStore::EVENT_FETCH_STREAM_NAMES_REGEX,
+                    TransactionalActionEventEmitterEventStore::EVENT_FETCH_CATEGORY_NAMES,
+                    TransactionalActionEventEmitterEventStore::EVENT_FETCH_CATEGORY_NAMES_REGEX,
+                    TransactionalActionEventEmitterEventStore::EVENT_BEGIN_TRANSACTION,
+                    TransactionalActionEventEmitterEventStore::EVENT_COMMIT,
+                    TransactionalActionEventEmitterEventStore::EVENT_ROLLBACK,
+                ])
+            );
+
+            $eventBus = new EventBus();
+            (new OnEventStrategy())->attachToMessageBus($eventBus);
+
+            (new EventPublisher($eventBus))->attachToEventStore($wrapper);
+
+            return $wrapper;
+        },
+        \PDO::class => function (ContainerInterface $container): \PDO {
+            return new \PDO(
+                'pgsql:host=postgres;port=5432;dbname=mvlabs;options=\'--client_encoding=utf8\';',
+                'mvlabs',
+                'mvlabs'
+            );
+        },
+        PizzeriasInterface::class => function (ContainerInterface $container): PizzeriasInterface {
+            return new EventSourcedPizzerias();
+        },
+
+        // COMMANDS
+        CreatePizzeriaCommand::class => function (ContainerInterface $container) : callable {
+            $pizzerias = $container->get(PizzeriasInterface::class);
+
+            return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
+                $pizzerias->add(Pizzeria::new($createPizzeria->name()));
+            };
         }
-    ]
+    ],
 ]);
