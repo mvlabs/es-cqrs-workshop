@@ -18,7 +18,6 @@
         "prooph/event-store-bus-bridge": "^3.0",
         "prooph/event-store": "^7.0",
         "prooph/pdo-event-store": "^1.0",
-        "doctrine/dbal": "^2.5",
         "prooph/event-sourcing": "^5.0",
         "ramsey/uuid": "^3.6"
     },
