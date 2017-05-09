@@ -16,6 +16,9 @@ use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\EventSourcing\Aggregate\AggregateRepository;
+use Prooph\EventSourcing\Aggregate\AggregateType;
+use Prooph\EventSourcing\EventStoreIntegration\AggregateTranslator;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
@@ -136,7 +139,13 @@ return new ServiceManager([
             );
         },
         PizzeriasInterface::class => function (ContainerInterface $container): PizzeriasInterface {
-            return new EventSourcedPizzerias();
+            return new EventSourcedPizzerias(
+                new AggregateRepository(
+                    $container->get(EventStore::class),
+                    AggregateType::fromAggregateRootClass(Pizzeria::class),
+                    new AggregateTranslator()
+                )
+            );
         },
 
         // COMMANDS

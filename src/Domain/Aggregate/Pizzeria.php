@@ -42,7 +42,7 @@ final class Pizzeria extends AggregateRoot
 
     public function aggregateId(): string
     {
-        return $this->id->toString();
+        return (string) $this->id;
     }
 
     public function apply(AggregateChanged $event): void
