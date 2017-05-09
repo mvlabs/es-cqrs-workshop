@@ -9,7 +9,9 @@ use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
@@ -125,7 +127,40 @@ return new ServiceManager([
             );
 
             $eventBus = new EventBus();
-            (new OnEventStrategy())->attachToMessageBus($eventBus);
+            (new class($container) extends AbstractPlugin {
+                /**
+                 * @var ContainerInterface
+                 */
+                private $container;
+
+                public function __construct(ContainerInterface $container)
+                {
+                    $this->container = $container;
+                }
+
+                public function attachToMessageBus(MessageBus $messageBus): void
+                {
+                    $this->listenerHandlers[] = $messageBus->attach(
+                        MessageBus::EVENT_DISPATCH,
+                        function (ActionEvent $actionEvent): void {
+                            if ($actionEvent->getParam(MessageBus::EVENT_PARAM_MESSAGE_HANDLED, false)) {
+                                return;
+                            }
+
+                            $messageName = $actionEvent->getParam(MessageBus::EVENT_PARAM_MESSAGE_NAME);
+
+                            $handlers = [];
+
+                            if ($this->container->has($messageName)) {
+                                $handlers = $this->container->get($messageName);
+                            }
+
+                            $actionEvent->setParam(EventBus::EVENT_PARAM_EVENT_LISTENERS, $handlers);
+                        },
+                        MessageBus::PRIORITY_LOCATE_HANDLER
+                    );
+                }
+            })->attachToMessageBus($eventBus);
 
             (new EventPublisher($eventBus))->attachToEventStore($wrapper);
 
@@ -149,12 +184,19 @@ return new ServiceManager([
         },
 
         // COMMANDS
-        CreatePizzeriaCommand::class => function (ContainerInterface $container) : callable {
+        CreatePizzeriaCommand::class => function (ContainerInterface $container): callable {
             $pizzerias = $container->get(PizzeriasInterface::class);
 
             return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
                 $pizzerias->add(Pizzeria::new($createPizzeria->name()));
             };
+        },
+
+        // EVENTS
+        PizzeriaCreated::class => function (ContainerInterface $container): array {
+            return [
+                new RecordPizzeriaOnPizzeriaCreated($container->get(\PDO::class))
+            ];
         }
     ],
 ]);
