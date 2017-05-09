@@ -8,7 +8,6 @@ use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use Prooph\EventSourcing\AggregateChanged;
 use Prooph\EventSourcing\AggregateRoot;
-use Ramsey\Uuid\Uuid;
 
 final class Pizzeria extends AggregateRoot
 {

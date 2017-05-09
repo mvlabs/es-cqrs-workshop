@@ -18,7 +18,7 @@ final class RecordPizzeriaOnPizzeriaCreated
         $this->connection = $connection;
     }
 
-    public function __invoke(PizzeriaCreated $pizzeriaCreated)
+    public function __invoke(PizzeriaCreated $pizzeriaCreated): void
     {
         $statement = $this->connection->prepare(
             'INSERT INTO pizzerias (id, name) VALUES (:id, :name)'

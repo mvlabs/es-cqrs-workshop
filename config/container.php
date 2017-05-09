@@ -31,7 +31,6 @@ use Prooph\ServiceBus\CommandBus;
 use Prooph\ServiceBus\EventBus;
 use Prooph\ServiceBus\MessageBus;
 use Prooph\ServiceBus\Plugin\AbstractPlugin;
-use Prooph\ServiceBus\Plugin\InvokeStrategy\OnEventStrategy;
 use Prooph\ServiceBus\Plugin\ServiceLocatorPlugin;
 use Zend\Expressive\Container\ErrorHandlerFactory;
 use Zend\Expressive\Container\WhoopsErrorResponseGeneratorFactory;
@@ -43,6 +42,7 @@ use Zend\Stratigility\Middleware\ErrorHandler;
 
 return new ServiceManager([
     'factories' => [
+        // ERROR HANDLER
         ErrorHandler::class => ErrorHandlerFactory::class,
         ErrorResponseGenerator::class => WhoopsErrorResponseGeneratorFactory::class,
         'Zend\Expressive\Whoops' => WhoopsFactory::class,
