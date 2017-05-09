@@ -33,7 +33,7 @@ If you are using docker, this will be already be present, and you will be able t
 pgAdmin navigating to `localhost:5050`.
 
 Once you have the database set up, you will need to create the table that will contain the event stream
-running the `sql` script you can find in `vendor/prooph/pdo-event-store/scripts/postgres/01_event_streams_table.sql`
+running the `sql` script you can find in `scripts/create_database_schema.sql`
 
 Then you will need to run the script `scripts/create_event_stream.php`. If you are using docker, you could use
 
