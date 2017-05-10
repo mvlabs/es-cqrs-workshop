@@ -25,5 +25,14 @@
         "psr-4": {
             "MVLabs\\EsCqrsWorkshop\\": "src/"
         }
+    },
+    "require-dev": {
+        "behat/behat": "^3.3",
+        "beberlei/assert": "^2.7"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PizzeriaAcceptanceTesting\\": "test/PizzeriaAcceptanceTesting"
+        }
     }
 }

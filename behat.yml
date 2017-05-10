@@ -1,0 +1,7 @@
+default:
+  suites:
+    building:
+      contexts:
+        - 'PizzeriaAcceptanceTesting\PizzeriaContext'
+      paths:
+        - 'features/pizzeria.feature'

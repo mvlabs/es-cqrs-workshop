@@ -60,3 +60,17 @@ docker-compose up
 Adding `127.0.0.1 escqrs-workshop.local` to your hosts you will be able
 to navigate to [http://escqrs-workshop.local/](http://escqrs-workshop.local/)
 and see the wonderful application
+
+## Acceptance tests
+
+You can run your acceptance tests present in `features/pizzeria.feature` using
+
+```bash
+vendor/bin/behat
+```
+
+If you are using docker, use
+
+```bash
+bin/behat
+```

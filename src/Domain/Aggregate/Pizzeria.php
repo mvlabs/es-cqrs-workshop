@@ -39,6 +39,11 @@ final class Pizzeria extends AggregateRoot
         $this->name = $pizzeriaCreated->name();
     }
 
+    public function id(): PizzeriaId
+    {
+        return $this->id;
+    }
+
     public function aggregateId(): string
     {
         return (string) $this->id;
