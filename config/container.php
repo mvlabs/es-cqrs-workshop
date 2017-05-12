@@ -6,6 +6,7 @@ namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
+use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\Home;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
@@ -57,6 +58,11 @@ return new ServiceManager([
         CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
             return new CreatePizzeria(
                 $container->get(CommandBus::class)
+            );
+        },
+        ComposeOrder::class => function (ContainerInterface $container): ComposeOrder {
+            return new ComposeOrder(
+                $container->get(Renderer::class)
             );
         },
 

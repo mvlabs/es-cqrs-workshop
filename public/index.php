@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
+use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
+use MVLabs\EsCqrsWorkshop\Action\ListPizzerias;
 use MVLabs\EsCqrsWorkshop\Action\Home;
 use Zend\Expressive\Application;
 use Zend\Expressive\Router\FastRouteRouter;
@@ -33,6 +35,8 @@ require __DIR__ . '/../vendor/autoload.php';
     $app->get('/', Home::class);
 
     $app->post('/create-pizzeria', CreatePizzeria::class);
+
+    $app->get('/compose-order', ComposeOrder::class);
 
     $app->run();
 })();
