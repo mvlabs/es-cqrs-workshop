@@ -1,26 +1,26 @@
 <?php
 
-namespace MVLabs\EsCqrsWorkshop\ProjectionReader;
+namespace MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader;
 
-use Doctrine\DBAL\Driver\Connection;
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 
 final class PizzeriasReader implements PizzeriasReaderInterface
 {
     /**
-     * @var Connection
+     * @var \PDO
      */
     private $connection;
 
-    public function __construct(Connection $connection)
+    public function __construct(\PDO $connection)
     {
         $this->connection = $connection;
     }
 
     public function listPizzerias(): array
     {
-        return $this->connection->fetchAll(
-            'SELECT * from pizzerias'
-        );
+        $statement = $this->connection->prepare('SELECT id, name from pizzerias');
+        $statement->execute();
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

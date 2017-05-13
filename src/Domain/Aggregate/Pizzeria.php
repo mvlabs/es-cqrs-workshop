@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use Prooph\EventSourcing\AggregateChanged;
 use Prooph\EventSourcing\AggregateRoot;
@@ -21,6 +22,11 @@ final class Pizzeria extends AggregateRoot
      */
     private $name;
 
+    /**
+     * @var array
+     */
+    private $orders;
+
     public static function new($name): self
     {
         $instance = new self();
@@ -33,10 +39,26 @@ final class Pizzeria extends AggregateRoot
         return $instance;
     }
 
+    public function addOrder(string $customerName, string $pizzaTaste)
+    {
+        $this->recordThat(OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
+            $customerName,
+            $this->id(),
+            $pizzaTaste
+        ));
+
+        return $this;
+    }
+
     public function whenPizzeriaCreated(PizzeriaCreated $pizzeriaCreated): void
     {
         $this->id = $pizzeriaCreated->pizzeriaId();
         $this->name = $pizzeriaCreated->name();
+    }
+
+    public function whenOrderReceived(OrderReceived $orderReceived): void
+    {
+        $this->orders[] = $orderReceived->payload();
     }
 
     public function id(): PizzeriaId
