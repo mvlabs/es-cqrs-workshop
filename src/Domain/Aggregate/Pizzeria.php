@@ -6,9 +6,11 @@ namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
+use MVLabs\EsCqrsWorkshop\Domain\Value\Order;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use Prooph\EventSourcing\AggregateChanged;
 use Prooph\EventSourcing\AggregateRoot;
+use Webmozart\Assert\Assert;
 
 final class Pizzeria extends AggregateRoot
 {
@@ -23,12 +25,14 @@ final class Pizzeria extends AggregateRoot
     private $name;
 
     /**
-     * @var array
+     * @var Order[]
      */
     private $orders;
 
     public static function new($name): self
     {
+        Assert::notEmpty($name, 'The name of the pizzeria must be not empty');
+
         $instance = new self();
 
         $instance->recordThat(PizzeriaCreated::fromIdAndName(
@@ -39,15 +43,16 @@ final class Pizzeria extends AggregateRoot
         return $instance;
     }
 
-    public function addOrder(string $customerName, string $pizzaTaste)
+    public function addOrder(string $customerName, string $pizzaTaste): void
     {
+        Assert::notEmpty($customerName, 'The name of the customer must be not empty');
+        Assert::notEmpty($pizzaTaste, 'The name of the pizza must be not empty');
+
         $this->recordThat(OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
             $customerName,
-            $this->id(),
+            $this->id,
             $pizzaTaste
         ));
-
-        return $this;
     }
 
     public function whenPizzeriaCreated(PizzeriaCreated $pizzeriaCreated): void
@@ -58,7 +63,10 @@ final class Pizzeria extends AggregateRoot
 
     public function whenOrderReceived(OrderReceived $orderReceived): void
     {
-        $this->orders[] = $orderReceived->payload();
+        $this->orders[] = Order::fromCustomerNameAndPizzaTaste(
+            $orderReceived->customerName(),
+            $orderReceived->pizzaTaste()
+        );
     }
 
     public function id(): PizzeriaId
@@ -77,7 +85,7 @@ final class Pizzeria extends AggregateRoot
 
         if (!method_exists($this, $handler)) {
             throw new \RuntimeException(sprintf(
-                "Missing event handler method %s for aggregate root %s",
+                'Missing event handler method %s for aggregate root %s',
                 $handler,
                 get_class($this)
             ));

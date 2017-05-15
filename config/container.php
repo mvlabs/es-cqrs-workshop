@@ -219,13 +219,15 @@ return new ServiceManager([
             };
         },
         AddOrderCommand::class => function (ContainerInterface $container): callable {
+            /** @var $pizzerias PizzeriasInterface */
             $pizzerias = $container->get(PizzeriasInterface::class);
 
             return function (AddOrderCommand $addOrder) use ($pizzerias): void {
-
                 $pizzeria = $pizzerias->get(PizzeriaId::fromString($addOrder->pizzeriaId()));
 
-                $pizzerias->add($pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste()));
+                $pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste());
+
+                $pizzerias->add($pizzeria);
             };
         },
 
