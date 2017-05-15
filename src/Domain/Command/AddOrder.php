@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop\Domain\Command;
 
+use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use Prooph\Common\Messaging\Command;
 
 final class AddOrder extends Command
@@ -32,7 +33,11 @@ final class AddOrder extends Command
         $this->pizzaTaste = $pizzaTaste;
     }
 
-    public static function fromCustomerNamePizzeriaAndPizzaTaste(string $customerName, string $pizzeriaId, string $pizzaTaste): self
+    public static function fromCustomerNamePizzeriaAndPizzaTaste(
+        string $customerName,
+        string $pizzeriaId,
+        string $pizzaTaste
+    ): self
     {
         return new self($customerName, $pizzeriaId, $pizzaTaste);
     }
@@ -47,9 +52,9 @@ final class AddOrder extends Command
         return $this->pizzaTaste;
     }
 
-    public function pizzeriaId(): string
+    public function pizzeriaId(): PizzeriaId
     {
-        return $this->pizzeriaId;
+        return PizzeriaId::fromString($this->pizzeriaId);
     }
 
     public function payload(): array
