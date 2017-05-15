@@ -34,7 +34,7 @@ final class OrderReceived extends AggregateChanged
         return (string) $this->payload()['customerName'];
     }
 
-    public function pizzeriaTaste() : string
+    public function pizzaTaste() : string
     {
         return (string) $this->payload()['pizzaTaste'];
     }
