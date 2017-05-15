@@ -6,15 +6,22 @@ namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
+use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
+use MVLabs\EsCqrsWorkshop\Action\SendOrder;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
+use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
+use MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader\PizzeriasReader;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
@@ -56,6 +63,21 @@ return new ServiceManager([
         },
         CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
             return new CreatePizzeria(
+                $container->get(CommandBus::class)
+            );
+        },
+        ComposeOrder::class => function (ContainerInterface $container): ComposeOrder {
+            return new ComposeOrder(
+                $container->get(Renderer::class)
+            );
+        },
+        PizzeriasList::class => function (ContainerInterface $container): PizzeriasList {
+            return new PizzeriasList(
+                $container->get(PizzeriasReaderInterface::class)
+            );
+        },
+        SendOrder::class => function (ContainerInterface $container): SendOrder {
+            return new SendOrder(
                 $container->get(CommandBus::class)
             );
         },
@@ -183,12 +205,29 @@ return new ServiceManager([
             );
         },
 
+        // PROJECTION READERS
+        PizzeriasReaderInterface::class => function (ContainerInterface $container): PizzeriasReaderInterface {
+            return new PizzeriasReader($container->get(\PDO::class));
+        },
+
         // COMMANDS
         CreatePizzeriaCommand::class => function (ContainerInterface $container): callable {
             $pizzerias = $container->get(PizzeriasInterface::class);
 
             return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
                 $pizzerias->add(Pizzeria::new($createPizzeria->name()));
+            };
+        },
+        AddOrderCommand::class => function (ContainerInterface $container): callable {
+            /** @var $pizzerias PizzeriasInterface */
+            $pizzerias = $container->get(PizzeriasInterface::class);
+
+            return function (AddOrderCommand $addOrder) use ($pizzerias): void {
+                $pizzeria = $pizzerias->get(PizzeriaId::fromString($addOrder->pizzeriaId()));
+
+                $pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste());
+
+                $pizzerias->add($pizzeria);
             };
         },
 

@@ -28,6 +28,6 @@ final class EventSourcedPizzerias implements PizzeriasInterface
 
     public function get(PizzeriaId $id): Pizzeria
     {
-        $this->aggregateRepository->getAggregateRoot((string) $id);
+        return $this->aggregateRepository->getAggregateRoot((string) $id);
     }
 }

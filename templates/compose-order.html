@@ -1,0 +1,45 @@
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+
+    $.getJSON("/pizzerias-list", function(data) {
+
+        $.each(data, function (i, d) {
+            $('#pizzeria').append('<option value="' + d.id + '">' + d.name + '</option>');
+        });
+
+    });
+});
+</script>
+
+<div>
+    <h1>Welcome to Pizzekore!</h1>
+</div>
+
+<h2>Create a new order</h2>
+
+<form action="/send-order" method="post">
+
+    <div>
+        Customer
+        <input type="text" name="customer" placeholder="Customer name">
+    </div>
+
+    <div>
+        Pizzeria
+        <select name="pizzeria" id="pizzeria">
+        </select>
+    </div>
+
+    <div>
+        Pizza's taste
+        <select name="pizza">
+            <option>Bella Napoli</option>
+            <option>Capricciosa</option>
+            <option>4 stagioni</option>
+            <option>Sorrentina</option>
+        </select>
+    </div>
+
+    <button>Send Order</button>
+</form>
