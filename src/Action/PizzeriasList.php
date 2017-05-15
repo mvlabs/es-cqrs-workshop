@@ -13,7 +13,6 @@ use Zend\Diactoros\Response\TextResponse;
 
 final class PizzeriasList implements MiddlewareInterface
 {
-
     /**
      * @var PizzeriasReaderInterface
      */

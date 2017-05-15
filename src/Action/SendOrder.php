@@ -31,7 +31,9 @@ final class SendOrder implements MiddlewareInterface
         $pizzeriaId = $request->getParsedBody()['pizzeria'];
         $pizzaTaste = $request->getParsedBody()['pizza'];
 
-        $this->commandBus->dispatch(AddOrderCommand::fromCustomerNamePizzeriaAndPizzaTaste($customerName, $pizzeriaId, $pizzaTaste));
+        $this->commandBus->dispatch(
+            AddOrderCommand::fromCustomerNamePizzeriaAndPizzaTaste($customerName, $pizzeriaId, $pizzaTaste)
+        );
 
         return (new Response())->withStatus(StatusCodeInterface::STATUS_ACCEPTED);
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader;
 
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
@@ -18,8 +20,7 @@ final class PizzeriasReader implements PizzeriasReaderInterface
 
     public function listPizzerias(): array
     {
-        $statement = $this->connection->prepare('SELECT id, name from pizzerias');
-        $statement->execute();
+        $statement = $this->connection->query('SELECT id, name from pizzerias');
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }

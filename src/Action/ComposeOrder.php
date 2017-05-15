@@ -13,7 +13,6 @@ use Zend\Diactoros\Response\HtmlResponse;
 
 final class ComposeOrder implements MiddlewareInterface
 {
-
     /**
      * @var Renderer
      */
