@@ -223,7 +223,7 @@ return new ServiceManager([
             $pizzerias = $container->get(PizzeriasInterface::class);
 
             return function (AddOrderCommand $addOrder) use ($pizzerias): void {
-                $pizzeria = $pizzerias->get(PizzeriaId::fromString($addOrder->pizzeriaId()));
+                $pizzeria = $pizzerias->get($addOrder->pizzeriaId());
 
                 $pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste());
 
