@@ -8,6 +8,7 @@ use Assert\Assertion;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Tester\Exception\PendingException;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use Prooph\EventSourcing\AggregateChanged;
 
@@ -36,7 +37,7 @@ final class PizzeriaContext implements Context
      */
     public function iOrderAPizzaAtThePizzeria(): void
     {
-        throw new PendingException();
+        $this->pizzeria->addOrder('gigi', 'margherita');
     }
 
     /**
@@ -44,7 +45,11 @@ final class PizzeriaContext implements Context
      */
     public function thePizzaShouldBeEnlistedOnThePizzeria(): void
     {
-        throw new PendingException();
+        $this->assertEvent(OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
+            'gigi',
+            $this->pizzeria->id(),
+            'margherita'
+        ));
     }
 
     /**
