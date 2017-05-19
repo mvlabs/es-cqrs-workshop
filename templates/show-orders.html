@@ -1,0 +1,27 @@
+<script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+
+        $.getJSON("/orders-list", function(data) {
+
+            $.each(data, function (i, d) {
+                $('#orders').append(
+                    '<div>' +
+                    '   <a href="/conclude-order/' + d.pizzeria + '/' + d.customer + '/' + d.pizza +'">'
+                    + d.pizza + ' orderd by ' + d.customer + ' at ' + d.name +
+                    '   </a>' +
+                    '</div>');
+            });
+
+        });
+    });
+</script>
+
+<div>
+    <h1>Welcome to Pizzekore!</h1>
+</div>
+
+<h2>Orders list</h2>
+
+<div id="orders"></div>
+

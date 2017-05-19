@@ -8,8 +8,10 @@ use Interop\Container\ContainerInterface;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Action\OrdersList;
 use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
 use MVLabs\EsCqrsWorkshop\Action\SendOrder;
+use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
@@ -81,6 +83,16 @@ return new ServiceManager([
         SendOrder::class => function (ContainerInterface $container): SendOrder {
             return new SendOrder(
                 $container->get(CommandBus::class)
+            );
+        },
+        ShowOrders::class => function (ContainerInterface $container): ShowOrders {
+            return new ShowOrders(
+                $container->get(Renderer::class)
+            );
+        },
+        OrdersList::class => function (ContainerInterface $container): OrdersList {
+            return new OrdersList(
+                $container->get(PizzeriasReaderInterface::class)
             );
         },
 

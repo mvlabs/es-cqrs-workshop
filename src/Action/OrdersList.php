@@ -11,7 +11,7 @@ use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Zend\Diactoros\Response\JsonResponse;
 
-final class PizzeriasList implements MiddlewareInterface
+final class OrdersList implements MiddlewareInterface
 {
     /**
      * @var PizzeriasReaderInterface
@@ -25,6 +25,6 @@ final class PizzeriasList implements MiddlewareInterface
 
     public function process(ServerRequestInterface $request, DelegateInterface $delegate): ResponseInterface
     {
-        return new JsonResponse($this->pizzeriasReader->listPizzerias());
+        return new JsonResponse($this->pizzeriasReader->listOrders());
     }
 }
