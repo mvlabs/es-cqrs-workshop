@@ -21,7 +21,7 @@ final class RecordPizzeriaOnPizzeriaCreated
     public function __invoke(PizzeriaCreated $pizzeriaCreated): void
     {
         $statement = $this->connection->prepare(
-            'INSERT INTO pizzerias (id, name) VALUES (:id, :name)'
+            'INSERT INTO pizzerias (id, name, pizzas) VALUES (:id, :name, \'[]\'::jsonb)'
         );
 
         $statement->execute([

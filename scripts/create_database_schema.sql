@@ -14,7 +14,7 @@ CREATE INDEX ON event_streams (category);
 CREATE TABLE pizzerias (
   id VARCHAR(36) NOT NULL,
   name VARCHAR(1023) NOT NULL,
-  pizzas TEXT[],
+  pizzas JSONB,
   PRIMARY KEY (id),
   UNIQUE (name)
 );

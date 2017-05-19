@@ -21,12 +21,13 @@ final class RecordPizzeriaOnOrderReceived
     public function __invoke(OrderReceived $orderReceived): void
     {
         $statement = $this->connection->prepare(
-            'UPDATE pizzerias SET pizzas = pizzas || ARRAY[:pizza] WHERE id = :id'
+            'UPDATE pizzerias SET pizzas = pizzas || jsonb_build_object(\'customer\', (:customer)::text, \'pizza\', (:pizza)::text) WHERE id = :id'
         );
 
         $statement->execute([
             'id' => (string)$orderReceived->pizzeriaId(),
-            'pizza' => $orderReceived->pizzaTaste()
+            'pizza' => $orderReceived->pizzaTaste(),
+            'customer' => $orderReceived->customerName()
         ]);
     }
 }
