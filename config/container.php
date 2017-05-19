@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
+use MVLabs\EsCqrsWorkshop\Action\CompleteOrder;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\Home;
@@ -93,6 +94,11 @@ return new ServiceManager([
         OrdersList::class => function (ContainerInterface $container): OrdersList {
             return new OrdersList(
                 $container->get(PizzeriasReaderInterface::class)
+            );
+        },
+        CompleteOrder::class => function (ContainerInterface $container): CompleteOrder {
+            return new CompleteOrder(
+                $container->get(CommandBus::class)
             );
         },
 
@@ -240,6 +246,18 @@ return new ServiceManager([
                 $pizzeria = $pizzerias->get($addOrder->pizzeriaId());
 
                 $pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste());
+
+                $pizzerias->add($pizzeria);
+            };
+        },
+        \MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder::class => function (ContainerInterface $container): callable {
+            /** @var $pizzerias PizzeriasInterface */
+            $pizzerias = $container->get(PizzeriasInterface::class);
+
+            return function (\MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder $completeOrder) use ($pizzerias): void {
+                $pizzeria = $pizzerias->get($completeOrder->pizzeriaId());
+
+                $pizzeria->completeOrder($completeOrder->customerName(), $completeOrder->pizzaTaste());
 
                 $pizzerias->add($pizzeria);
             };

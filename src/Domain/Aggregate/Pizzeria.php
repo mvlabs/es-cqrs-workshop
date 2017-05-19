@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\Value\Order;
@@ -49,6 +50,17 @@ final class Pizzeria extends AggregateRoot
         Assert::notEmpty($pizzaTaste, 'The name of the pizza must be not empty');
 
         $this->recordThat(OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
+            $customerName,
+            $this->id,
+            $pizzaTaste
+        ));
+    }
+
+    public function completeOrder($customerName, $pizzaTaste)
+    {
+        // TODO: check order is present
+
+        $this->recordThat(OrderCompleted::fromCustomerPizzeriaAndPizzaTaste(
             $customerName,
             $this->id,
             $pizzaTaste
