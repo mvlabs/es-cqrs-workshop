@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
+use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Exception\InvalidOrderCompletionException;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
@@ -58,7 +59,18 @@ final class Pizzeria extends AggregateRoot
 
     public function completeOrder($customerName, $pizzaTaste)
     {
-        // TODO: check order is present
+        $selectedOrders = array_filter($this->orders, function (Order $order) use ($customerName, $pizzaTaste) {
+            return $customerName === $order->customerName() &&
+                $pizzaTaste === $order->pizzaTaste();
+        });
+
+        if (empty($selectedOrders)) {
+            throw InvalidOrderCompletionException::fromInvalidOrder(
+                $this->name,
+                $customerName,
+                $pizzaTaste
+            );
+        }
 
         $this->recordThat(OrderCompleted::fromCustomerPizzeriaAndPizzaTaste(
             $customerName,
@@ -79,6 +91,16 @@ final class Pizzeria extends AggregateRoot
             $orderReceived->customerName(),
             $orderReceived->pizzaTaste()
         );
+    }
+
+    public function whenOrderCompleted(OrderCompleted $orderCompleted): void
+    {
+        $matchingOrders = array_filter($this->orders, function (Order $order) use ($orderCompleted) {
+            return $orderCompleted->customerName() === $order->customerName() &&
+                $orderCompleted->pizzaTaste() === $order->pizzaTaste();
+        });
+
+        unset($this->orders[key($matchingOrders)]);
     }
 
     public function id(): PizzeriaId

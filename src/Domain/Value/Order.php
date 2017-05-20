@@ -26,4 +26,14 @@ final class Order
     {
         return new self($customerName, $pizzaTaste);
     }
+
+    public function customerName(): string
+    {
+        return $this->customerName;
+    }
+
+    public function pizzaTaste(): string
+    {
+        return $this->pizzaTaste;
+    }
 }

@@ -27,9 +27,9 @@ final class CompleteOrder implements MiddlewareInterface
     public function process(ServerRequestInterface $request, DelegateInterface $delegate): ResponseInterface
     {
         $this->commandBus->dispatch(\MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder::fromCustomerNamePizzeriaAndPizzaTaste(
+            urldecode($request->getAttribute('customer')),
             $request->getAttribute('pizzeriaId'),
-            $request->getAttribute('customer'),
-            $request->getAttribute('pizza')
+            urldecode($request->getAttribute('pizza'))
         ));
 
         return (new Response())->withStatus(StatusCodeInterface::STATUS_ACCEPTED);
