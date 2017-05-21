@@ -16,11 +16,13 @@ use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderCompleted;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderReceived;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
@@ -272,6 +274,11 @@ return new ServiceManager([
         OrderReceived::class => function (ContainerInterface $container): array {
             return [
                 new RecordPizzeriaOnOrderReceived($container->get(\PDO::class))
+            ];
+        },
+        OrderCompleted::class => function (ContainerInterface $container): array {
+            return [
+                new RecordPizzeriaOnOrderCompleted($container->get(\PDO::class))
             ];
         }
     ],
