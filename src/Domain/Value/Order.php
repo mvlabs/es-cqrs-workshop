@@ -16,15 +16,28 @@ final class Order
      */
     private $pizzaTaste;
 
-    private function __construct(string $customerName, string $pizzaTaste)
-    {
+    /**
+     * @var \DateTimeImmutable
+     */
+    private $createdAt;
+
+    private function __construct(
+        string $customerName,
+        string $pizzaTaste,
+        \DateTimeImmutable $createdAt
+    ) {
         $this->customerName = $customerName;
         $this->pizzaTaste = $pizzaTaste;
+        $this->createdAt = $createdAt;
     }
 
-    public static function fromCustomerNameAndPizzaTaste(string $customerName, string $pizzaTaste): self
+    public static function fromCustomerNamePizzaTasteAndDateTime(
+        string $customerName,
+        string $pizzaTaste,
+        \DateTimeImmutable $createdAt
+    ): self
     {
-        return new self($customerName, $pizzaTaste);
+        return new self($customerName, $pizzaTaste, $createdAt);
     }
 
     public function customerName(): string
@@ -35,5 +48,10 @@ final class Order
     public function pizzaTaste(): string
     {
         return $this->pizzaTaste;
+    }
+
+    public function createdAt(): \DateTimeImmutable
+    {
+        return $this->createdAt;
     }
 }

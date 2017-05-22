@@ -259,7 +259,11 @@ return new ServiceManager([
             return function (\MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder $completeOrder) use ($pizzerias): void {
                 $pizzeria = $pizzerias->get($completeOrder->pizzeriaId());
 
-                $pizzeria->completeOrder($completeOrder->customerName(), $completeOrder->pizzaTaste());
+                $pizzeria->completeOrder(
+                    $completeOrder->customerName(),
+                    $completeOrder->pizzaTaste(),
+                    $completeOrder->orderCreatedAt()
+                );
 
                 $pizzerias->add($pizzeria);
             };

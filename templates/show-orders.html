@@ -7,7 +7,7 @@
             $.each(data, function (i, d) {
                 $('#orders').append(
                     '<div>' +
-                    '   <a href="/conclude-order/' + d.pizzeria + '/' + d.customer + '/' + d.pizza +'">'
+                    '   <a href="/conclude-order/' + d.pizzeria + '/' + d.customer + '/' + d.pizza + '/' + d.at + '">'
                     + d.pizza + ' orderd by ' + d.customer + ' at ' + d.name +
                     '   </a>' +
                     '</div>');

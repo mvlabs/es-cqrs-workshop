@@ -39,7 +39,8 @@ final class PizzeriasReader implements PizzeriasReaderInterface
                     'pizzeria' => $pizzeria['id'],
                     'name' => $pizzeria['name'],
                     'customer' => $order->customer,
-                    'pizza' => $order->pizza
+                    'pizza' => $order->pizza,
+                    'at' => $order->at
                 ];
             }
         }

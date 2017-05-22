@@ -57,11 +57,16 @@ final class Pizzeria extends AggregateRoot
         ));
     }
 
-    public function completeOrder($customerName, $pizzaTaste)
+    public function completeOrder(
+        string$customerName,
+        string $pizzaTaste,
+        \DateTimeImmutable $orderCreatedAt
+    ): void
     {
-        $selectedOrders = array_filter($this->orders, function (Order $order) use ($customerName, $pizzaTaste) {
+        $selectedOrders = array_filter($this->orders, function (Order $order) use ($customerName, $pizzaTaste, $orderCreatedAt) {
             return $customerName === $order->customerName() &&
-                $pizzaTaste === $order->pizzaTaste();
+                $pizzaTaste === $order->pizzaTaste() &&
+                $orderCreatedAt->format('U') === $order->createdAt()->format('U');
         });
 
         if (empty($selectedOrders)) {
@@ -72,10 +77,11 @@ final class Pizzeria extends AggregateRoot
             );
         }
 
-        $this->recordThat(OrderCompleted::fromCustomerPizzeriaAndPizzaTaste(
+        $this->recordThat(OrderCompleted::fromCustomerPizzeriaPizzaTasteAndDateTime(
             $customerName,
             $this->id,
-            $pizzaTaste
+            $pizzaTaste,
+            $orderCreatedAt
         ));
     }
 
@@ -87,9 +93,10 @@ final class Pizzeria extends AggregateRoot
 
     public function whenOrderReceived(OrderReceived $orderReceived): void
     {
-        $this->orders[] = Order::fromCustomerNameAndPizzaTaste(
+        $this->orders[] = Order::fromCustomerNamePizzaTasteAndDateTime(
             $orderReceived->customerName(),
-            $orderReceived->pizzaTaste()
+            $orderReceived->pizzaTaste(),
+            $orderReceived->createdAt()
         );
     }
 

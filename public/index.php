@@ -50,7 +50,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
     $app->get('/orders-list', OrdersList::class);
 
-    $app->get('/conclude-order/{pizzeriaId}/{customer}/{pizza}', CompleteOrder::class);
+    $app->get('/conclude-order/{pizzeriaId}/{customer}/{pizza}/{at}', CompleteOrder::class);
 
     $app->run();
 })();
