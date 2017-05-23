@@ -5,14 +5,34 @@
         $.getJSON("/orders-list", function(data) {
 
             $.each(data, function (i, d) {
-                $('#orders').append(
+                /*$('#orders').append(
                     '<div>' +
                     '   <a href="/conclude-order/' + d.pizzeria + '/' + d.customer + '/' + d.pizza + '/' + d.at + '">'
                     + d.pizza + ' orderd by ' + d.customer + ' at ' + d.name +
                     '   </a>' +
-                    '</div>');
+                    '</div>');*/
+                $('#orders').append(
+                    '<div class="order" ' +
+                    'data-pizzeria="' + d.pizzeria + '" ' +
+                    'data-customer="' + d.customer + '" ' +
+                    'data-pizza="' + d.pizza + '" ' +
+                    'data-at="' + d.at + '">' +
+                        '<span>' + d.pizza + ' orderd by ' + d.customer + ' at ' + d.name + '</span> ' +
+                        '<button>Complete order</button>' +
+                    '</div>'
+                );
             });
 
+            $('.order button').click(function () {
+                var parent = $(this).parent();
+
+                $.post('/complete-order', {
+                    'at': parent.data('at'),
+                    'customer': parent.data('customer'),
+                    'pizza': parent.data('pizza'),
+                    'pizzeria': parent.data('pizzeria')
+                });
+            });
         });
     });
 </script>
