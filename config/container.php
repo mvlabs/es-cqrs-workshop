@@ -16,9 +16,11 @@ use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Command\NotifyDeliveryBoy;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\Process\WhenOrderCompletedNotifyDeliveryBoy;
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
@@ -268,6 +270,9 @@ return new ServiceManager([
                 $pizzerias->add($pizzeria);
             };
         },
+        NotifyDeliveryBoy::class => function (ContainerInterface $container): callable {
+            return function (NotifyDeliveryBoy $notifyDeliveryBoy): void {};
+        },
 
         // EVENTS
         PizzeriaCreated::class => function (ContainerInterface $container): array {
@@ -282,7 +287,8 @@ return new ServiceManager([
         },
         OrderCompleted::class => function (ContainerInterface $container): array {
             return [
-                new RecordPizzeriaOnOrderCompleted($container->get(\PDO::class))
+                new RecordPizzeriaOnOrderCompleted($container->get(\PDO::class)),
+                new WhenOrderCompletedNotifyDeliveryBoy($container->get(CommandBus::class))
             ];
         }
     ],
