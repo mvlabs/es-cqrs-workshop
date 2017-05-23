@@ -22,7 +22,7 @@ final class RecordPizzeriaOnOrderCompleted
     {
         $statement = $this->connection->prepare(
             'UPDATE pizzerias SET pizzas = (' .
-            '   SELECT to_jsonb(array_agg(ord)) FROM (' .
+            '   SELECT COALESCE(to_jsonb(array_agg(ord)), \'[]\'::jsonb) FROM (' .
             '       SELECT ord FROM	(' .
             '           SELECT jsonb_array_elements(pizzas) AS ord FROM pizzerias) AS orders '.
             '           WHERE ord != jsonb_build_object(\'customer\', (:customer)::text, \'at\', (:at)::int, \'pizza\', (:pizza)::text) '.
