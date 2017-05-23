@@ -7,7 +7,9 @@ namespace PizzeriaAcceptanceTesting;
 use Assert\Assertion;
 use Behat\Behat\Context\Context;
 use Behat\Behat\Tester\Exception\PendingException;
+use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Exception\InvalidOrderCompletionException;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use Prooph\EventSourcing\AggregateChanged;
@@ -18,6 +20,8 @@ final class PizzeriaContext implements Context
      * @var Pizzeria
      */
     private $pizzeria;
+
+    private $orderCreatedAt;
 
     /**
      * @Given I have a pizzeria
@@ -57,7 +61,17 @@ final class PizzeriaContext implements Context
      */
     public function iHaveOrderedAPizzaAtThePizzeria(): void
     {
-        throw new PendingException();
+        $this->pizzeria->addOrder('gigi', 'margherita');
+
+        $orderReceived = OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
+            'gigi',
+            $this->pizzeria->id(),
+            'margherita'
+        );
+
+        $this->orderCreatedAt = $orderReceived->createdAt();
+
+        $this->assertEvent($orderReceived);
     }
 
     /**
@@ -65,7 +79,11 @@ final class PizzeriaContext implements Context
      */
     public function thePizzaIsCompleted(): void
     {
-        throw new PendingException();
+        $this->pizzeria->completeOrder(
+            'gigi',
+            'margherita',
+            $this->orderCreatedAt
+        );
     }
 
     /**
@@ -73,7 +91,12 @@ final class PizzeriaContext implements Context
      */
     public function thePizzaShouldNotBeEnlistedOnThePizzeria(): void
     {
-        throw new PendingException();
+        $this->assertEvent(OrderCompleted::fromCustomerPizzeriaPizzaTasteAndDateTime(
+            'gigi',
+            $this->pizzeria->id(),
+            'margherita',
+            $this->orderCreatedAt
+        ));
     }
 
     /**
@@ -81,7 +104,13 @@ final class PizzeriaContext implements Context
      */
     public function thePizzeriaShouldNotBeAbleToCompleteAPizza(): void
     {
-        throw new PendingException();
+        try {
+            $this->pizzeria->completeOrder('gigi', 'margherita', date_create_immutable());
+
+            throw new \RuntimeException('An inexistend order was completed');
+        } catch (\Exception $e) {
+            Assertion::isInstanceOf($e, InvalidOrderCompletionException::class);
+        }
     }
 
     private function assertEvent(AggregateChanged $event): void

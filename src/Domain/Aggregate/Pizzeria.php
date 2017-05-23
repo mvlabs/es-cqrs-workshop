@@ -29,7 +29,7 @@ final class Pizzeria extends AggregateRoot
     /**
      * @var Order[]
      */
-    private $orders;
+    private $orders = [];
 
     public static function new($name): self
     {
