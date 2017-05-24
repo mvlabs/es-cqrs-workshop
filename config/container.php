@@ -7,6 +7,7 @@ namespace MVLabs\EsCqrsWorkshop;
 use Interop\Container\ContainerInterface;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
 use Prooph\Common\Event\ActionEvent;
@@ -46,7 +47,9 @@ return new ServiceManager([
             );
         },
         CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
-            return new CreatePizzeria();
+            return new CreatePizzeria(
+                $container->get(CommandBus::class)
+            );
         },
 
         // INFRASTRUCTURE
@@ -161,6 +164,11 @@ return new ServiceManager([
                 'mvlabs',
                 'mvlabs'
             );
+        },
+
+        // COMMANDS
+        CreatePizzeriaCommand::class => function (ContainerInterface $container): callable {
+            return function (CreatePizzeriaCommand $createPizzeria): void {};
         },
     ],
 ]);
