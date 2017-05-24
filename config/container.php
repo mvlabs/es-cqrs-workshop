@@ -16,6 +16,7 @@ use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder as CompleteOrderCommand;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
@@ -96,7 +97,9 @@ return new ServiceManager([
             );
         },
         CompleteOrder::class => function (ContainerInterface $container): CompleteOrder {
-            return new CompleteOrder();
+            return new CompleteOrder(
+                $container->get(CommandBus::class)
+            );
         },
 
         // INFRASTRUCTURE
@@ -246,6 +249,9 @@ return new ServiceManager([
 
                 $pizzerias->add($pizzeria);
             };
+        },
+        CompleteOrderCommand::class => function (ContainerInterface $container): callable {
+            return function (CompleteOrderCommand $completeOrder): void {};
         },
 
         // EVENTS
