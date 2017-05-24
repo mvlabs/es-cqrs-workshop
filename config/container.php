@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
+use MVLabs\EsCqrsWorkshop\Action\CompleteOrder;
 use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
@@ -93,6 +94,9 @@ return new ServiceManager([
             return new OrdersList(
                 $container->get(PizzeriasReaderInterface::class)
             );
+        },
+        CompleteOrder::class => function (ContainerInterface $container): CompleteOrder {
+            return new CompleteOrder();
         },
 
         // INFRASTRUCTURE
