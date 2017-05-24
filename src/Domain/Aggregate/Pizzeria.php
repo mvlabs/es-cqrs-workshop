@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\Value\Order;
 use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
 use Prooph\EventSourcing\AggregateChanged;
 use Prooph\EventSourcing\AggregateRoot;
@@ -22,6 +24,11 @@ final class Pizzeria extends AggregateRoot
      */
     private $name;
 
+    /**
+     * @var Order[]
+     */
+    private $orders = [];
+
     public static function new($name): self
     {
         Assert::notEmpty($name, 'The name of the pizzeria must be not empty');
@@ -36,10 +43,31 @@ final class Pizzeria extends AggregateRoot
         return $instance;
     }
 
+    public function addOrder(string $customerName, string $pizzaTaste): void
+    {
+        Assert::notEmpty($customerName, 'The name of the customer must be not empty');
+        Assert::notEmpty($pizzaTaste, 'The name of the pizza must be not empty');
+
+        $this->recordThat(OrderReceived::fromCustomerPizzeriaAndPizzaTaste(
+            $customerName,
+            $this->id,
+            $pizzaTaste
+        ));
+    }
+
     public function whenPizzeriaCreated(PizzeriaCreated $pizzeriaCreated): void
     {
         $this->id = $pizzeriaCreated->pizzeriaId();
         $this->name = $pizzeriaCreated->name();
+    }
+
+    public function whenOrderReceived(OrderReceived $orderReceived): void
+    {
+        $this->orders[] = Order::fromCustomerNamePizzaTasteAndDateTime(
+            $orderReceived->customerName(),
+            $orderReceived->pizzaTaste(),
+            $orderReceived->createdAt()
+        );
     }
 
     public function id(): PizzeriaId
