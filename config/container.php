@@ -17,11 +17,15 @@ use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder as CompleteOrderCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Command\NotifyDeliveryBoy;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\Process\WhenOrderCompletedNotifyDeliveryBoy;
 use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
 use MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader\PizzeriasReader;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderCompleted;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderReceived;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
@@ -266,6 +270,9 @@ return new ServiceManager([
                 $pizzerias->add($pizzeria);
             };
         },
+        NotifyDeliveryBoy::class => function (ContainerInterface $container): callable {
+            return function (NotifyDeliveryBoy $notifyDeliveryBoy): void {};
+        },
 
         // EVENTS
         PizzeriaCreated::class => function (ContainerInterface $container): array {
@@ -278,5 +285,11 @@ return new ServiceManager([
                 new RecordPizzeriaOnOrderReceived($container->get(\PDO::class))
             ];
         },
+        OrderCompleted::class => function (ContainerInterface $container): array {
+            return [
+                new RecordPizzeriaOnOrderCompleted($container->get(\PDO::class)),
+                new WhenOrderCompletedNotifyDeliveryBoy($container->get(CommandBus::class))
+            ];
+        }
     ],
 ]);
