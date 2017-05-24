@@ -7,6 +7,7 @@ namespace MVLabs\EsCqrsWorkshop;
 use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Action\OrdersList;
 use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
 use MVLabs\EsCqrsWorkshop\Action\SendOrder;
 use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
@@ -45,6 +46,8 @@ require __DIR__ . '/../vendor/autoload.php';
     $app->post('/send-order', SendOrder::class);
 
     $app->get('/show-orders', ShowOrders::class);
+
+    $app->get('/orders-list', OrdersList::class);
 
     $app->run();
 })();

@@ -24,4 +24,27 @@ final class PizzeriasReader implements PizzeriasReaderInterface
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
+
+    public function listOrders(): array
+    {
+        $statement = $this->connection->query('SELECT id, name, pizzas FROM pizzerias');
+
+        $orders = [];
+
+        foreach ($statement->fetchAll(\PDO::FETCH_ASSOC) as $pizzeria) {
+            $pizzeriaOrders = json_decode($pizzeria['pizzas']);
+
+            foreach ($pizzeriaOrders as $order) {
+                $orders[] = [
+                    'pizzeria' => $pizzeria['id'],
+                    'name' => $pizzeria['name'],
+                    'customer' => $order->customer,
+                    'pizza' => $order->pizza,
+                    'at' => $order->at
+                ];
+            }
+        }
+
+        return $orders;
+    }
 }
