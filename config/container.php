@@ -5,38 +5,12 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
-use MVLabs\EsCqrsWorkshop\Action\CompleteOrder;
-use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
-use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\Home;
-use MVLabs\EsCqrsWorkshop\Action\OrdersList;
-use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
-use MVLabs\EsCqrsWorkshop\Action\SendOrder;
-use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
-use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
-use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
-use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
-use MVLabs\EsCqrsWorkshop\Domain\Command\NotifyDeliveryBoy;
-use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
-use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
-use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
-use MVLabs\EsCqrsWorkshop\Domain\Process\WhenOrderCompletedNotifyDeliveryBoy;
-use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
-use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
-use MVLabs\EsCqrsWorkshop\Domain\Value\PizzeriaId;
-use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderCompleted;
-use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnOrderReceived;
-use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
-use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
-use MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader\PizzeriasReader;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
-use Prooph\EventSourcing\Aggregate\AggregateRepository;
-use Prooph\EventSourcing\Aggregate\AggregateType;
-use Prooph\EventSourcing\EventStoreIntegration\AggregateTranslator;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
@@ -68,41 +42,6 @@ return new ServiceManager([
         Home::class => function (ContainerInterface $container): Home {
             return new Home(
                 $container->get(Renderer::class)
-            );
-        },
-        CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
-            return new CreatePizzeria(
-                $container->get(CommandBus::class)
-            );
-        },
-        ComposeOrder::class => function (ContainerInterface $container): ComposeOrder {
-            return new ComposeOrder(
-                $container->get(Renderer::class)
-            );
-        },
-        PizzeriasList::class => function (ContainerInterface $container): PizzeriasList {
-            return new PizzeriasList(
-                $container->get(PizzeriasReaderInterface::class)
-            );
-        },
-        SendOrder::class => function (ContainerInterface $container): SendOrder {
-            return new SendOrder(
-                $container->get(CommandBus::class)
-            );
-        },
-        ShowOrders::class => function (ContainerInterface $container): ShowOrders {
-            return new ShowOrders(
-                $container->get(Renderer::class)
-            );
-        },
-        OrdersList::class => function (ContainerInterface $container): OrdersList {
-            return new OrdersList(
-                $container->get(PizzeriasReaderInterface::class)
-            );
-        },
-        CompleteOrder::class => function (ContainerInterface $container): CompleteOrder {
-            return new CompleteOrder(
-                $container->get(CommandBus::class)
             );
         },
 
@@ -219,77 +158,5 @@ return new ServiceManager([
                 'mvlabs'
             );
         },
-        PizzeriasInterface::class => function (ContainerInterface $container): PizzeriasInterface {
-            return new EventSourcedPizzerias(
-                new AggregateRepository(
-                    $container->get(EventStore::class),
-                    AggregateType::fromAggregateRootClass(Pizzeria::class),
-                    new AggregateTranslator()
-                )
-            );
-        },
-
-        // PROJECTION READERS
-        PizzeriasReaderInterface::class => function (ContainerInterface $container): PizzeriasReaderInterface {
-            return new PizzeriasReader($container->get(\PDO::class));
-        },
-
-        // COMMANDS
-        CreatePizzeriaCommand::class => function (ContainerInterface $container): callable {
-            $pizzerias = $container->get(PizzeriasInterface::class);
-
-            return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
-                $pizzerias->add(Pizzeria::new($createPizzeria->name()));
-            };
-        },
-        AddOrderCommand::class => function (ContainerInterface $container): callable {
-            /** @var $pizzerias PizzeriasInterface */
-            $pizzerias = $container->get(PizzeriasInterface::class);
-
-            return function (AddOrderCommand $addOrder) use ($pizzerias): void {
-                $pizzeria = $pizzerias->get($addOrder->pizzeriaId());
-
-                $pizzeria->addOrder($addOrder->customerName(), $addOrder->pizzaTaste());
-
-                $pizzerias->add($pizzeria);
-            };
-        },
-        \MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder::class => function (ContainerInterface $container): callable {
-            /** @var $pizzerias PizzeriasInterface */
-            $pizzerias = $container->get(PizzeriasInterface::class);
-
-            return function (\MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder $completeOrder) use ($pizzerias): void {
-                $pizzeria = $pizzerias->get($completeOrder->pizzeriaId());
-
-                $pizzeria->completeOrder(
-                    $completeOrder->customerName(),
-                    $completeOrder->pizzaTaste(),
-                    $completeOrder->orderCreatedAt()
-                );
-
-                $pizzerias->add($pizzeria);
-            };
-        },
-        NotifyDeliveryBoy::class => function (ContainerInterface $container): callable {
-            return function (NotifyDeliveryBoy $notifyDeliveryBoy): void {};
-        },
-
-        // EVENTS
-        PizzeriaCreated::class => function (ContainerInterface $container): array {
-            return [
-                new RecordPizzeriaOnPizzeriaCreated($container->get(\PDO::class))
-            ];
-        },
-        OrderReceived::class => function (ContainerInterface $container): array {
-            return [
-                new RecordPizzeriaOnOrderReceived($container->get(\PDO::class))
-            ];
-        },
-        OrderCompleted::class => function (ContainerInterface $container): array {
-            return [
-                new RecordPizzeriaOnOrderCompleted($container->get(\PDO::class)),
-                new WhenOrderCompletedNotifyDeliveryBoy($container->get(CommandBus::class))
-            ];
-        }
     ],
 ]);
