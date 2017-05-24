@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
+use MVLabs\EsCqrsWorkshop\Action\ComposeOrder;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
+use MVLabs\EsCqrsWorkshop\Domain\ProjectionReader\PizzeriasReaderInterface;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
+use MVLabs\EsCqrsWorkshop\Infrastructure\ProjectionReader\PizzeriasReader;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
@@ -57,6 +61,16 @@ return new ServiceManager([
         CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
             return new CreatePizzeria(
                 $container->get(CommandBus::class)
+            );
+        },
+        ComposeOrder::class => function (ContainerInterface $container): ComposeOrder {
+            return new ComposeOrder(
+                $container->get(Renderer::class)
+            );
+        },
+        PizzeriasList::class => function (ContainerInterface $container): PizzeriasList {
+            return new PizzeriasList(
+                $container->get(PizzeriasReaderInterface::class)
             );
         },
 
@@ -181,6 +195,11 @@ return new ServiceManager([
                     new AggregateTranslator()
                 )
             );
+        },
+
+        // PROJECTION READERS
+        PizzeriasReaderInterface::class => function (ContainerInterface $container): PizzeriasReaderInterface {
+            return new PizzeriasReader($container->get(\PDO::class));
         },
 
         // COMMANDS
