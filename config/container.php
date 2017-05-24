@@ -7,12 +7,18 @@ namespace MVLabs\EsCqrsWorkshop;
 use Interop\Container\ContainerInterface;
 use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
+use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
+use Prooph\EventSourcing\Aggregate\AggregateRepository;
+use Prooph\EventSourcing\Aggregate\AggregateType;
+use Prooph\EventSourcing\EventStoreIntegration\AggregateTranslator;
 use Prooph\EventStore\EventStore;
 use Prooph\EventStore\Pdo\PersistenceStrategy\PostgresSingleStreamStrategy;
 use Prooph\EventStore\Pdo\PostgresEventStore;
@@ -165,10 +171,23 @@ return new ServiceManager([
                 'mvlabs'
             );
         },
+        PizzeriasInterface::class => function (ContainerInterface $container): PizzeriasInterface {
+            return new EventSourcedPizzerias(
+                new AggregateRepository(
+                    $container->get(EventStore::class),
+                    AggregateType::fromAggregateRootClass(Pizzeria::class),
+                    new AggregateTranslator()
+                )
+            );
+        },
 
         // COMMANDS
         CreatePizzeriaCommand::class => function (ContainerInterface $container): callable {
-            return function (CreatePizzeriaCommand $createPizzeria): void {};
+            $pizzerias = $container->get(PizzeriasInterface::class);
+
+            return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
+                $pizzerias->add(Pizzeria::new($createPizzeria->name()));
+            };
         },
     ],
 ]);
