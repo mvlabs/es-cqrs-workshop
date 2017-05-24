@@ -32,7 +32,7 @@ services:
       - base
 
   pgadmin:
-    image: fenglc/pgadmin4
+    image: fenglc/pgadmin4:1.4
     container_name: escqrs-workshop-pgadmin4
     ports:
       - 5050:5050
