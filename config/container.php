@@ -9,7 +9,9 @@ use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\Repository\PizzeriasInterface;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
@@ -188,6 +190,13 @@ return new ServiceManager([
             return function (CreatePizzeriaCommand $createPizzeria) use ($pizzerias): void {
                 $pizzerias->add(Pizzeria::new($createPizzeria->name()));
             };
+        },
+
+        // EVENTS
+        PizzeriaCreated::class => function (ContainerInterface $container): array {
+            return [
+                new RecordPizzeriaOnPizzeriaCreated($container->get(\PDO::class))
+            ];
         },
     ],
 ]);
