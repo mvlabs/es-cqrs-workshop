@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MVLabs\EsCqrsWorkshop;
 
 use Interop\Container\ContainerInterface;
+use MVLabs\EsCqrsWorkshop\Action\CreatePizzeria;
 use MVLabs\EsCqrsWorkshop\Action\Home;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
@@ -43,6 +44,9 @@ return new ServiceManager([
             return new Home(
                 $container->get(Renderer::class)
             );
+        },
+        CreatePizzeria::class => function (ContainerInterface $container): CreatePizzeria {
+            return new CreatePizzeria();
         },
 
         // INFRASTRUCTURE
