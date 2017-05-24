@@ -251,7 +251,20 @@ return new ServiceManager([
             };
         },
         CompleteOrderCommand::class => function (ContainerInterface $container): callable {
-            return function (CompleteOrderCommand $completeOrder): void {};
+            /** @var $pizzerias PizzeriasInterface */
+            $pizzerias = $container->get(PizzeriasInterface::class);
+
+            return function (CompleteOrderCommand $completeOrder) use ($pizzerias): void {
+                $pizzeria = $pizzerias->get($completeOrder->pizzeriaId());
+
+                $pizzeria->completeOrder(
+                    $completeOrder->customerName(),
+                    $completeOrder->pizzaTaste(),
+                    $completeOrder->orderCreatedAt()
+                );
+
+                $pizzerias->add($pizzeria);
+            };
         },
 
         // EVENTS

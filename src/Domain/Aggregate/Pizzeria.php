@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace MVLabs\EsCqrsWorkshop\Domain\Aggregate;
 
+use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Exception\InvalidOrderCompletionException;
+use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\PizzeriaCreated;
 use MVLabs\EsCqrsWorkshop\Domain\Value\Order;
@@ -55,6 +57,34 @@ final class Pizzeria extends AggregateRoot
         ));
     }
 
+    public function completeOrder(
+        string$customerName,
+        string $pizzaTaste,
+        \DateTimeImmutable $orderCreatedAt
+    ): void
+    {
+        $selectedOrders = array_filter($this->orders, function (Order $order) use ($customerName, $pizzaTaste, $orderCreatedAt) {
+            return $customerName === $order->customerName() &&
+                $pizzaTaste === $order->pizzaTaste() &&
+                $orderCreatedAt->format('U') === $order->createdAt()->format('U');
+        });
+
+        if (empty($selectedOrders)) {
+            throw InvalidOrderCompletionException::fromInvalidOrder(
+                $this->name,
+                $customerName,
+                $pizzaTaste
+            );
+        }
+
+        $this->recordThat(OrderCompleted::fromCustomerPizzeriaPizzaTasteAndDateTime(
+            $customerName,
+            $this->id,
+            $pizzaTaste,
+            $orderCreatedAt
+        ));
+    }
+
     public function whenPizzeriaCreated(PizzeriaCreated $pizzeriaCreated): void
     {
         $this->id = $pizzeriaCreated->pizzeriaId();
@@ -68,6 +98,16 @@ final class Pizzeria extends AggregateRoot
             $orderReceived->pizzaTaste(),
             $orderReceived->createdAt()
         );
+    }
+
+    public function whenOrderCompleted(OrderCompleted $orderCompleted): void
+    {
+        $matchingOrders = array_filter($this->orders, function (Order $order) use ($orderCompleted) {
+            return $orderCompleted->customerName() === $order->customerName() &&
+                $orderCompleted->pizzaTaste() === $order->pizzaTaste();
+        });
+
+        unset($this->orders[key($matchingOrders)]);
     }
 
     public function id(): PizzeriaId
