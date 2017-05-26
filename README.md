@@ -43,6 +43,12 @@ docker exec -ti escqrs-workshop-php php /app/scripts/create_event_stream.php
 
 after you run `docker-compose up`.
 
+#### Snapshots
+
+If you want to use snapshots you should run also the `sql` script you can find in
+`vendor/prooph/pdo-snapshot-store/scripts/postgres_snapshot_table.sql`, and update the `Composer` dependencies after
+checking out the `8-shapshotting` branch.
+
 ## Run the application
 
 Run the application using

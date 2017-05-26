@@ -20,7 +20,9 @@
         "prooph/pdo-event-store": "^1.0",
         "prooph/event-sourcing": "^5.0",
         "ramsey/uuid": "^3.6",
-        "webmozart/assert": "^1.2"
+        "webmozart/assert": "^1.2",
+        "prooph/snapshotter": "^2.0",
+        "prooph/pdo-snapshot-store": "^1.1"
     },
     "autoload": {
         "psr-4": {

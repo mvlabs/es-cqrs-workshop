@@ -14,9 +14,9 @@ use MVLabs\EsCqrsWorkshop\Action\PizzeriasList;
 use MVLabs\EsCqrsWorkshop\Action\SendOrder;
 use MVLabs\EsCqrsWorkshop\Action\ShowOrders;
 use MVLabs\EsCqrsWorkshop\Domain\Aggregate\Pizzeria;
-use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\AddOrder as AddOrderCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\CompleteOrder as CompleteOrderCommand;
+use MVLabs\EsCqrsWorkshop\Domain\Command\CreatePizzeria as CreatePizzeriaCommand;
 use MVLabs\EsCqrsWorkshop\Domain\Command\NotifyDeliveryBoy;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderCompleted;
 use MVLabs\EsCqrsWorkshop\Domain\DomainEvent\OrderReceived;
@@ -31,6 +31,7 @@ use MVLabs\EsCqrsWorkshop\Infrastructure\Projector\RecordPizzeriaOnPizzeriaCreat
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\HtmlRenderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Renderer\Renderer;
 use MVLabs\EsCqrsWorkshop\Infrastructure\Repository\EventSourcedPizzerias;
+use MVLabs\EsCqrsWorkshop\Infrastructure\Snapshot\PizzeriaSnapshot;
 use Prooph\Common\Event\ActionEvent;
 use Prooph\Common\Event\ProophActionEventEmitter;
 use Prooph\Common\Messaging\FQCNMessageFactory;
@@ -48,6 +49,8 @@ use Prooph\ServiceBus\EventBus;
 use Prooph\ServiceBus\MessageBus;
 use Prooph\ServiceBus\Plugin\AbstractPlugin;
 use Prooph\ServiceBus\Plugin\ServiceLocatorPlugin;
+use Prooph\SnapshotStore\Pdo\PdoSnapshotStore;
+use Prooph\SnapshotStore\SnapshotStore;
 use Zend\Expressive\Container\ErrorHandlerFactory;
 use Zend\Expressive\Container\WhoopsErrorResponseGeneratorFactory;
 use Zend\Expressive\Container\WhoopsFactory;
@@ -210,6 +213,19 @@ return new ServiceManager([
 
             (new EventPublisher($eventBus))->attachToEventStore($wrapper);
 
+            (new PizzeriaSnapshot(
+                $eventBus,
+                new EventSourcedPizzerias(
+                    new AggregateRepository(
+                        $wrapper,
+                        AggregateType::fromAggregateRootClass(Pizzeria::class),
+                        new AggregateTranslator(),
+                        $container->get(SnapshotStore::class)
+                    )
+                ),
+                $container->get(SnapshotStore::class)
+            ))->attachToEventStore($wrapper);
+
             return $wrapper;
         },
         \PDO::class => function (ContainerInterface $container): \PDO {
@@ -224,8 +240,14 @@ return new ServiceManager([
                 new AggregateRepository(
                     $container->get(EventStore::class),
                     AggregateType::fromAggregateRootClass(Pizzeria::class),
-                    new AggregateTranslator()
+                    new AggregateTranslator(),
+                    $container->get(SnapshotStore::class)
                 )
+            );
+        },
+        SnapshotStore::class => function (ContainerInterface $container): SnapshotStore {
+            return new PdoSnapshotStore(
+                $container->get(\PDO::class)
             );
         },
 
